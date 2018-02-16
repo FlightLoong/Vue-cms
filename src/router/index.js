@@ -5,10 +5,15 @@ Vue.use(Router)
 
 import Home from '@/components/Home'
 import Login from '@/components/Login'
+import ManIndex from '@/components/ManIndex'
 
 
 export default new Router({
 	routes: [
+		{
+			path: '/',
+			redirect: '/login'
+		},
 		{
 			path: '/login',
 			name: 'login',
@@ -17,7 +22,11 @@ export default new Router({
 		{
 			path: '/home',
 			name: 'home',
-			component: Home
+			component: Home,
+			redirect: '/ManIndex',
+			children: [
+				{ path: '/ManIndex', component: ManIndex }
+			]
 		}
 	]
 })

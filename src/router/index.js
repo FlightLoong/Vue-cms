@@ -6,6 +6,7 @@ Vue.use(Router)
 import Home from '@/components/Home'
 import Login from '@/components/Login'
 import ManIndex from '@/components/ManIndex'
+import User from '@/components/user/User'
 
 
 export default new Router({
@@ -25,7 +26,8 @@ export default new Router({
 			component: Home,
 			redirect: '/ManIndex',
 			children: [
-				{ path: '/ManIndex', component: ManIndex }
+				{ path: '/ManIndex', component: ManIndex },
+				{ path: '/users', component: User}
 			]
 		}
 	]

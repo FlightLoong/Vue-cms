@@ -95,7 +95,6 @@
 </template>
 
 <script>
-	import { testData } from '../api/api.js'
 	export default {
 		data() {
 			return {
@@ -113,15 +112,7 @@
 				this.$router.push({ name: 'login' })
 			}
 		},
-		mounted() {
-			testData({
-				query: '',
-				pagenum: 1,
-				pagesize: 10
-			}).then((res) => {
-				console.log(res);
-			})
-		}
+		mounted() {}
 	}
 </script>
 

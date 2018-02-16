@@ -48,7 +48,7 @@ export default {
 				};
 
 				login(params).then(res => {
-					console.log(res);
+					// console.log(res);
 					if (res.meta.status === 200) {
 						localStorage.setItem("mytoken", res.data.token);
 						this.$router.push({ name: "home" });

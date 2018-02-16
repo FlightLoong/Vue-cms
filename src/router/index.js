@@ -3,20 +3,21 @@ import Router from 'vue-router'
 Vue.use(Router)
 
 
-import HelloWorld from '@/components/HelloWorld'
-import count from '@/vuex/Count'
+import Home from '@/components/Home'
+import Login from '@/components/Login'
 
 
 export default new Router({
-  routes: [
-    {
-      path: '/',
-      name: 'Hello',
-      component: HelloWorld
-    },
-    {
-    	path: '/vuex',
-    	component: count
-    }
-  ]
+	routes: [
+		{
+			path: '/login',
+			name: 'login',
+			component: Login
+		},
+		{
+			path: '/home',
+			name: 'home',
+			component: Home
+		}
+	]
 })

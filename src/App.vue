@@ -1,24 +1,55 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <div>111</div>
     <router-view/>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'app'
-}
+  name: "app"
+};
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+	@font-face {
+		font-family: "icomoon";
+		src: url("./assets/myfonts/icomoon.eot?1hpwbn");
+		src: url("./assets/myfonts/icomoon.eot?1hpwbn#iefix")
+			format("embedded-opentype"),
+			url("./assets/myfonts/icomoon.ttf?1hpwbn") format("truetype"),
+			url("./assets/myfonts/icomoon.woff?1hpwbn") format("woff"),
+			url("./assets/myfonts/icomoon.svg?1hpwbn#icomoon") format("svg");
+		font-weight: normal;
+		font-style: normal;
+	}
+
+	/*[class^="icon-"], [class*=" icon-"] {*/
+	.myicon {
+		/* use !important to prevent issues with browser extensions that change fonts */
+		font-family: "icomoon" !important;
+		speak: none;
+		font-style: normal;
+		font-weight: normal;
+		font-variant: normal;
+		text-transform: none;
+		line-height: 1;
+
+		/* Better Font Rendering =========== */
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+
+	.myicon-menu:before {
+		content: "\e9bd";
+	}
+	.myicon-user:before {
+		content: "\e975";
+		font-size: 20px;
+		line-height: 40px;
+	}
+	.myicon-key:before {
+		content: "\e98d";
+		font-size: 20px;
+		line-height: 40px;
+	}
 </style>

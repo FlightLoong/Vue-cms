@@ -8,6 +8,7 @@ import Login from '@/components/Login'
 import ManIndex from '@/components/ManIndex'
 import User from '@/components/user/User'
 import Rights from '@/components/rights/Rights'
+import Roles from '@/components/rights/Roles'
 
 
 export default new Router({
@@ -29,7 +30,8 @@ export default new Router({
 			children: [
 				{ path: '/ManIndex', component: ManIndex },
 				{ path: '/users', component: User},
-				{ path: '/rights', component: Rights}
+				{ path: '/rights', component: Rights},
+				{ path: '/roles', component: Roles}
 			]
 		}
 	]

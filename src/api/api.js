@@ -78,3 +78,10 @@ export const Rights = (params) => {
         return res.data
     })
 }
+
+// 角色列表
+export const Roles = () => {
+    return axios.get('roles').then(res => {
+        return res.data
+    })
+}

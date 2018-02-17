@@ -71,3 +71,10 @@ export const findUser = (params) => {
         return res.data
     })
 }
+
+// 权限列表
+export const Rights = (params) => {
+    return axios.get('rights/' + params.type).then(res => {
+        return res.data
+    })
+}

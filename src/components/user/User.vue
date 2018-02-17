@@ -12,7 +12,7 @@
         <el-input placeholder="请输入内容" class="search">
             <el-button slot="append" icon="el-icon-search"></el-button>
         </el-input>
-        <el-button type="success" plain>成功按钮</el-button>
+        <el-button type="success" plain @click="dialogVisibleAdd = true">添加用户</el-button>
         <el-table
         border
         :data="tableData"
@@ -47,9 +47,9 @@
                 label="操作">
                 <!-- 使用作用域插槽来定制数据的显示 -->
                 <template slot-scope="scope">
-                    <el-button size='small' type="primary" icon="el-icon-edit"></el-button>
-                    <el-button size='small' type="danger" icon="el-icon-delete"></el-button>
-                    <el-button size='small' type="primary" icon="el-icon-edit"></el-button>
+                    <el-button  @click='editDialog(scope.row)' size='small' plain type="primary" icon="el-icon-edit"></el-button>
+                    <el-button size='small' plain type="danger" icon="el-icon-delete"></el-button>
+                    <el-button size='small' plain type="success" icon="el-icon-check"></el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -62,24 +62,125 @@
         layout="total, sizes, prev, pager, next, jumper"
         :total="total">
         </el-pagination>
+
+        <!-- 添加用户弹出框 -->
+        <el-dialog
+        title="添加用户"
+        @close="closeDialogUser('add')"
+        :visible.sync="dialogVisibleAdd"
+        width="40%"  class="demo-ruleForm">
+            <el-form ref="addUserForm" :rules="rules" :model="auser" label-width="80px">
+                <el-form-item label="用户名" prop="username">
+                    <el-input v-model="auser.username"></el-input>
+                </el-form-item>
+                <el-form-item label="密码" prop="password">
+                    <el-input v-model="auser.password"></el-input>
+                </el-form-item>
+                <el-form-item label="邮箱" prop="email">
+                    <el-input v-model="auser.email"></el-input>
+                </el-form-item>
+                <el-form-item label="手机" prop="mobile">
+                    <el-input v-model="auser.mobile"></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisibleAdd = false">取 消</el-button>
+                <el-button type="primary" @click="AddUserSubmit">确 定</el-button>
+            </span>
+        </el-dialog>
+
+        <!-- 编辑用户弹出框 -->
+        <el-dialog
+        title="编辑用户"
+        @close="closeDialogUser('edit')"
+        :visible.sync="dialogVisibleEdit"
+        width="40%"  class="demo-ruleForm">
+            <el-form ref="editUserForm" :rules="rules" :model="euser" label-width="80px">
+                <el-form-item label="用户名" prop="username">
+                    <el-button type="success" plain disabled>{{ euser.username }}</el-button>
+                </el-form-item>
+                <el-form-item label="邮箱" prop="email">
+                    <el-input v-model="euser.email"></el-input>
+                </el-form-item>
+                <el-form-item label="手机" prop="mobile">
+                    <el-input v-model="euser.mobile"></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisibleEdit = false">取 消</el-button>
+                <el-button type="primary" @click="EddUserSubmit">确 定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
 <script>
-    import { usersData, usersStateChange } from '../../api/api'
+    import { usersData, usersStateChange, addUser, getUserById, editUser } from '../../api/api'
     export default {
         data() {
             return {
+                auser: {
+                    username: '',
+                    password: '',
+                    email: '',
+                    mobile: ''
+                },
+                euser: {
+                    username: '',
+                    password: '',
+                    email: '',
+                    mobile: '',
+                    id: ''
+                },
+                rules: {
+                    username: [
+                        { required: true, message: '请输入您的用户名', tigger: 'blur' }
+                    ],
+                    password: [
+                        { required: true, message: '请输入您的密码', tigger: 'blur' }
+                    ],
+                    email: [
+                        { required: true, message: '请输入您的用户名', tigger: 'blur' }
+                    ],
+                    mobile: [
+                        { required: true, message: '请输入您的密码', tigger: 'blur' }
+                    ]
+                },
                 pagesize: 5,  // 每页显示多少条数据
                 currentPage: 1, // 当前是第几页数据
                 total: 0,  // 管理员总条数
-                tableData: [] // 管理员实际总条数列表
+                tableData: [], // 管理员实际总条数列表
+                dialogVisibleAdd: false,  // 添加用户
+                dialogVisibleEdit: false // 编辑用户
             }
         },
         mounted() {
             this.initList();
         },
         methods: {
+            // 添加管理员
+            AddUserSubmit(){
+                this.$refs['addUserForm'].validate(valid => {
+                    if(valid) {
+                        addUser(this.user).then(res => {
+                            console.log(res);
+                            if(res.meta.status === 201) {
+                                this.dialogVisibleAdd = false;
+                                this.initList();
+                            }
+                        })
+                    }
+                })
+            },
+            // 关闭 dialog
+            closeDialogUser(flag){
+                if(flag === "add"){
+                    this.dialogVisibleAdd = false;                    
+                }else if(flag === 'edit'){
+                    this.dialogVisibleEdit = false; 
+                }
+            },
+            // 管理员使用状态的切换
             usersToggle(data){
                 usersStateChange({
                     uId: data.id,  // 管理员 id
@@ -94,16 +195,49 @@
                     }
                 })
             },
+            // -------------------------------- 编辑列表 ------------------------------------
+            // 编辑弹框,获取最新的数据库，添加到弹出框
+            editDialog(row){
+                getUserById({ id: row.id }).then(res => {
+                    if(res.meta.status === 200) {
+                        // 填充表单
+                        this.euser.id = res.data.id
+                        this.euser.username = res.data.username
+                        this.euser.email = res.data.email
+                        this.euser.mobile = res.data.mobile
+                        // 显示弹窗
+                        this.dialogVisibleEdit = true
+                    }
+                })
+            },
+            EddUserSubmit(){
+                this.$refs['editUserForm'].validate(valid => {
+                    if(valid) {
+                        editUser(this.euser).then(res => {
+                            if (res.meta.status === 200) {
+                                // 关闭窗口
+                                this.dialogVisibleEdit = false
+                                // 刷新列表
+                                this.initList()
+                            }
+                        })
+                    }
+                })
+            },
+            // 提交编辑，已经编辑好图书，点击确定，把编辑好的图书同步到数据库
+            // 分页每页条数
             handleSizeChange(val) {
                 console.log(`每页 ${val} 条`);
                 this.pagesize = val;
                 this.initList()
             },
+            // 分页当前页码数
             handleCurrentChange(val) {
                 console.log(`当前页: ${val}`);
                 this.currentPage = val
                 this.initList()
             },
+            // 初始化数据 ：页面打开，请求数据，对页面进行渲染
             initList() {
                 usersData({
                     query: '',
@@ -117,7 +251,8 @@
                         this.currentPage = res.data.pagenum
                     }
                 })
-            }
+            },
+            handleClose(){}
         }
     }
 </script>

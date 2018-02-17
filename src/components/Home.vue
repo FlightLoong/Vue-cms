@@ -158,15 +158,16 @@
   }
   .logo {
     height:60px;
-    background: url(../assets/logo.png);
+    background: url(../assets/cmslogo.jpg);
     background-size: cover;
     background-color: #989898;
   }
   .stitle {
     position: absolute;
-    font-size: 28px;
+    font-size: 22px;
     overflow: hidden;
     width: 300px;
+    text-align: center;
     color: #fff;
     left: 600px;
     top: 0px;

@@ -36,3 +36,24 @@ export const usersStateChange = (params) => {
         return res.data
     })
 }
+
+// 添加管理员用户
+export const addUser = (params) => {
+    return axios.post('users', params).then(res => {
+        return res.data
+    })
+}
+
+// 获取管理员列表数据
+export const getUserById = (params) => {
+    return axios.get('users/' + params.id).then(res => {
+        return res.data
+    })
+}
+
+// 提交管理员列表数据
+export const editUser = (params) => {
+    return axios.put('users/' + params.id, params).then(res => {
+        return res.data
+    })
+}

@@ -64,3 +64,10 @@ export const deleteUser = (params) => {
         return res.data
     })
 }
+
+// 查询管理员
+export const findUser = (params) => {
+    return axios.get('users/' + params.id, params).then(res => {
+        return res.data
+    })
+}

@@ -9,8 +9,8 @@
                 </el-breadcrumb>
             </el-col>
         </el-row>
-        <el-input placeholder="请输入内容" class="search">
-            <el-button slot="append" icon="el-icon-search"></el-button>
+        <el-input v-model="query" placeholder="请输入内容" class="search">
+            <el-button @click="findMan" slot="append" icon="el-icon-search"></el-button>
         </el-input>
         <el-button type="success" plain @click="dialogVisibleAdd = true">添加用户</el-button>
         <el-table
@@ -115,7 +115,7 @@
 </template>
 
 <script>
-    import { usersData, usersStateChange, addUser, getUserById, editUser, deleteUser } from '../../api/api'
+    import { usersData, usersStateChange, addUser, getUserById, editUser, deleteUser, findUser } from '../../api/api'
     export default {
         data() {
             return {
@@ -151,7 +151,8 @@
                 total: 0,  // 管理员总条数
                 tableData: [], // 管理员实际总条数列表
                 dialogVisibleAdd: false,  // 添加用户
-                dialogVisibleEdit: false // 编辑用户
+                dialogVisibleEdit: false, // 编辑用户
+                query: ''
             }
         },
         mounted() {
@@ -248,6 +249,11 @@
                 });
             },
 
+            // --------------------------------- 查询管理员 ----------------------------------
+            findMan(){
+                this.initList()
+            },
+
             // 提交编辑，已经编辑好图书，点击确定，把编辑好的图书同步到数据库
             // 分页每页条数
             handleSizeChange(val) {
@@ -264,7 +270,7 @@
             // 初始化数据 ：页面打开，请求数据，对页面进行渲染
             initList() {
                 usersData({
-                    query: '',
+                    query: this.query,
                     pagenum: this.currentPage,
                     pagesize: this.pagesize
                 }).then((res) => {

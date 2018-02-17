@@ -57,3 +57,10 @@ export const editUser = (params) => {
         return res.data
     })
 }
+
+// 删除管理员列表
+export const deleteUser = (params) => {
+    return axios.delete('users/' + params.id, params).then(res => {
+        return res.data
+    })
+}

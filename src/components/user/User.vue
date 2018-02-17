@@ -48,7 +48,7 @@
                 <!-- 使用作用域插槽来定制数据的显示 -->
                 <template slot-scope="scope">
                     <el-button  @click='editDialog(scope.row)' size='small' plain type="primary" icon="el-icon-edit"></el-button>
-                    <el-button size='small' plain type="danger" icon="el-icon-delete"></el-button>
+                    <el-button  @click="removeDialog(scope.row)" size='small' plain type="danger" icon="el-icon-delete"></el-button>
                     <el-button size='small' plain type="success" icon="el-icon-check"></el-button>
                 </template>
             </el-table-column>
@@ -115,7 +115,7 @@
 </template>
 
 <script>
-    import { usersData, usersStateChange, addUser, getUserById, editUser } from '../../api/api'
+    import { usersData, usersStateChange, addUser, getUserById, editUser, deleteUser } from '../../api/api'
     export default {
         data() {
             return {
@@ -224,6 +224,30 @@
                     }
                 })
             },
+            // --------------------------------- 删除列表 ------------------------------------
+            removeDialog(row){
+                this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    deleteUser({ id: row.id }).then(res => {
+                        if(res.meta.status === 200) {
+                            this.$message({
+                                type: 'success',
+                                message: '删除成功!'
+                            });
+                            this.initList()
+                        }
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });          
+                });
+            },
+
             // 提交编辑，已经编辑好图书，点击确定，把编辑好的图书同步到数据库
             // 分页每页条数
             handleSizeChange(val) {

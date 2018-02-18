@@ -9,11 +9,54 @@
                 </el-breadcrumb>
             </el-col>
         </el-row>
+        <el-button type="success" plain @click="dialogVisibleAdd = true">添加用户</el-button>
+
+        <!-- 添加用户弹出框 -->
+        <el-dialog
+        title="添加用户"
+        @close="closeDialogUser('add')"
+        :visible.sync="dialogVisibleAdd"
+        width="40%"  class="demo-ruleForm">
+            <el-form ref="addRolesForm" :rules="rules" :model="rolesAdd" label-width="80px">
+                <el-form-item label="角色名称" prop="roleName">
+                    <el-input v-model="rolesAdd.roleName"></el-input>
+                </el-form-item>
+                <el-form-item label="角色描述" prop="roleDesc">
+                    <el-input v-model="rolesAdd.roleDesc"></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisibleAdd = false">取 消</el-button>
+                <el-button type="primary" @click="AddRulesSubmit">确 定</el-button>
+            </span>
+        </el-dialog>
+
+        <!-- 编辑用户弹出框 -->
+        <el-dialog
+        title="编辑用户"
+        @close="closeDialogUser('edit')"
+        :visible.sync="dialogVisibleEdit"
+        width="40%"  class="demo-ruleForm">
+            <el-form ref="editRolesForm" :rules="rules" :model="rolesEdit" label-width="80px">
+                <el-form-item label="角色名称" prop="roleName">
+                    <el-input v-model="rolesEdit.roleName"></el-input>
+                </el-form-item>
+                <el-form-item label="角色描述" prop="roleDesc">
+                    <el-input v-model="rolesEdit.roleDesc"></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisibleEdit = false">取 消</el-button>
+                <el-button type="primary" @click="EditRulesSubmit">确 定</el-button>
+            </span>
+        </el-dialog>
+
+        <!-- 角色列表 -->
         <el-table
         border
         :data="tableData"
         style="width: 100%">
-            <el-table-column type="expand">
+            <el-table-column type="expand" label="点击展开" width="80">
                 <template slot-scope="scope">
                     <el-row :key="item.id" v-for="item in scope.row.children">
                         <el-col :span="3">
@@ -47,7 +90,7 @@
             <el-table-column
                 prop="roleDesc"
                 label="描述"
-                width="600">
+                width="500">
             </el-table-column>
             <el-table-column
                 label="操作"
@@ -64,11 +107,30 @@
 </template>
 
 <script>
-    import { Roles } from '../../api/api'
+    import { Roles, addRoles, getRolesById, editRoles, deleteRoles } from '../../api/api'
     export default {
         data(){
             return {
-                tableData: []
+                dialogVisibleAdd: false,
+                dialogVisibleEdit: false,
+                tableData: [],
+                rules: {
+                    roleName: [
+                        { required: true, message: '请输入您要添加的角色', tigger: 'blur' }
+                    ],
+                    roleDesc: [
+                        { required: false, message: '', tigger: 'blur' }
+                    ]
+                },
+                rolesAdd: {
+                    roleName: '',
+                    roleDesc: ''
+                },
+                rolesEdit: {
+                    roleName: '',
+                    roleDesc: '',
+                    id: ''
+                }
             }
         },
         methods: {
@@ -78,6 +140,77 @@
                     if(res.meta.status === 200){
                         this.tableData = res.data;
                     }
+                })
+            },
+            // 关闭 dialog
+            closeDialogUser(){
+                this.dialogVisibleAdd = false; 
+            },
+            // 添加角色
+            AddRulesSubmit(){
+                this.$refs.addRolesForm.validate(valid => {
+                    if(valid) {
+                        addRoles(this.roles ).then(res => {
+                            if (res.meta.status === 201) {
+                                // 关闭弹窗
+                                this.dialogVisibleAdd = false
+                                // 刷新列表
+                                this.rolesList()
+                            }
+                        })
+                    }
+                })
+                
+            },
+            // 编辑角色
+            editDialog(row){
+                getRolesById({ id: row.id }).then(res => {
+                    if (res.meta.status === 200) {
+                        this.rolesEdit.id = res.data.roleId
+                        this.rolesEdit.roleName = res.data.roleName
+                        this.rolesEdit.roleDesc = res.data.roleDesc
+                        // 显示弹窗
+                        this.dialogVisibleEdit = true
+                    }
+                })
+            },
+            // 编辑之后提交
+            EditRulesSubmit(row){
+                this.$refs.editRolesForm.validate(valid => {
+                    if(valid) {
+                        editRoles(this.rolesEdit).then(res => {
+                            if (res.meta.status === 200) {
+                                // 刷新页面
+                                this.rolesList()
+                                // 关闭窗口
+                                this.dialogVisibleEdit = false
+                            }
+                        })
+                    }
+                })
+            },
+            removeDialog(row){
+                this.$confirm('此操作将永久删除该角色, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    // 删除角色
+                    deleteRoles({id: row.id}).then(res => {
+                        if (res.meta.status === 200) {
+                            // 刷新列表
+                            this.rolesList()
+                            this.$message({
+                                message: res.meta.msg,
+                                type: 'success'
+                            })
+                        }
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });          
                 })
             }
         },
@@ -107,6 +240,9 @@
     .arrow {
         font-size: 18px;
         font-weight: bold;
+    }
+    .el-button--success.is-plain{
+        margin: 10px 0px;
     }
 </style>
 

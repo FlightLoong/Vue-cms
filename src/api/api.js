@@ -85,3 +85,27 @@ export const Roles = () => {
         return res.data
     })
 }
+// 添加角色
+export const addRoles = (params) => {
+    return axios.post('roles', params).then(res => {
+        return res.data
+    })
+}
+// 根据id查询角色信息
+export const getRolesById = (params) => {
+    return axios.get('roles/' + params.id).then(res => {
+        return res.data
+    })
+}
+// 编辑角色
+export const editRoles = (params) => {
+    return axios.put('roles/' + params.id, params).then(res => {
+        return res.data
+    })
+}
+// 删除角色
+export const deleteRoles = (params) => {
+    return axios.delete('roles/' + params.id).then(res => {
+        return res.data
+    })
+}

@@ -14,7 +14,7 @@
         <!-- 添加用户弹出框 -->
         <el-dialog
         title="添加用户"
-        @close="closeDialogUser('add')"
+        @close="closeDialogRoles('add')"
         :visible.sync="dialogVisibleAdd"
         width="40%"  class="demo-ruleForm">
             <el-form ref="addRolesForm" :rules="rules" :model="rolesAdd" label-width="80px">
@@ -34,7 +34,7 @@
         <!-- 编辑用户弹出框 -->
         <el-dialog
         title="编辑用户"
-        @close="closeDialogUser('edit')"
+        @close="closeDialogRoles('edit')"
         :visible.sync="dialogVisibleEdit"
         width="40%"  class="demo-ruleForm">
             <el-form ref="editRolesForm" :rules="rules" :model="rolesEdit" label-width="80px">
@@ -48,6 +48,26 @@
             <span slot="footer" class="dialog-footer">
                 <el-button @click="dialogVisibleEdit = false">取 消</el-button>
                 <el-button type="primary" @click="EditRulesSubmit">确 定</el-button>
+            </span>
+        </el-dialog>
+
+        <!-- 编辑用户权限框 -->
+        <el-dialog
+        title="角色授权"
+        @close="closeDialogRoles('change')"
+        :visible.sync="dialogVisibleChange"
+        width="40%"  class="demo-ruleForm">
+            <el-tree
+            :props="propsTree"
+            :data="dataTree"
+            node-key="id"
+            show-checkbox
+            :default-checked-keys="selectTree"
+            default-expand-all>
+            </el-tree>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisibleChange = false">取 消</el-button>
+                <el-button type="primary" @click="ChangeRulesSubmit">确 定</el-button>
             </span>
         </el-dialog>
 
@@ -100,7 +120,7 @@
                 <template slot-scope="scope">
                     <el-button  @click='editDialog(scope.row)' size='small' plain type="primary" icon="el-icon-edit"></el-button>
                     <el-button  @click="removeDialog(scope.row)" size='small' plain type="danger" icon="el-icon-delete"></el-button>
-                    <el-button size='small' plain type="success" icon="el-icon-check"></el-button>
+                    <el-button  @click="changeDialog(scope.row)" size='small' plain type="success" icon="el-icon-check"></el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -108,12 +128,14 @@
 </template>
 
 <script>
-    import { Roles, addRoles, getRolesById, editRoles, deleteRoles, deleteRolesRight } from '../../api/api'
+    import { Roles, addRoles, getRolesById, editRoles, deleteRoles, deleteRolesRight, Rights } from '../../api/api'
     export default {
         data(){
             return {
+                selectTree: [105,106],
                 dialogVisibleAdd: false,
                 dialogVisibleEdit: false,
+                dialogVisibleChange: false,
                 tableData: [],
                 rules: {
                     roleName: [
@@ -132,21 +154,33 @@
                     roleDesc: '',
                     id: ''
                 },
-                currentRoles: {}
+                currentRoles: {},
+                propsTree: {
+                    label: 'authName',
+                    children: 'children'
+                },
+                dataTree: []
             }
         },
         methods: {
             rolesList(){
                 Roles().then(res => {
-                    console.log(res);
+                    // console.log(res);
                     if(res.meta.status === 200){
                         this.tableData = res.data;
                     }
                 })
             },
             // 关闭 dialog
-            closeDialogUser(){
-                this.dialogVisibleAdd = false; 
+            closeDialogRoles(flag){
+                // 关闭弹窗
+                if (flag === 'add') {
+                    this.dialogVisibleAdd = false
+                } else if (flag === 'edit') {
+                    this.dialogVisibleEdit = false
+                } else {
+                    this.dialogVisibleChange = false
+                }
             },
             // 添加角色
             AddRulesSubmit(){
@@ -222,11 +256,44 @@
             },
             // 删除权限
             deleteRight(row, rightId){
+                // console.log(row);
                 // 删除指定角色的权限
                 deleteRolesRight({roleId: row.id, rightId: rightId}).then(res => {
                     if (res.meta.status === 200) {
                         // 删除成功，把新数据重新赋值
                         row.children = res.data
+                    }
+                })
+            },
+            // 点击显示设置权限界面
+            changeDialog(row){
+                Rights({ type: 'tree' }).then(res => {
+                    // console.log(res);
+                    if(res.meta.status === 200) {
+                        this.dataTree = res.data;
+                        // console.log(this.dataTree);
+                        this.selectTree = []
+                        // console.log(row.children);
+                        this._getThirdRightId(row.children, this.selectTree)
+                        this.dialogVisibleChange = true;
+                        // 设置当前角色
+                        // this.currentRole = row.id
+                    }
+                })
+            },
+            // 确定用户的权限界面
+            ChangeRulesSubmit(){},
+            handleCheckChange(){},
+            _getThirdRightId (data, arr) {
+                // 获取三级权限id
+                data.forEach((item) => {
+                    // console.log(item.children);
+                    if (!item.children) {
+                        arr.push(item.id)
+                        // console.log(arr);
+                    } else {
+                        console.log(arr);
+                        this._getThirdRightId(item.children, arr)
                     }
                 })
             }

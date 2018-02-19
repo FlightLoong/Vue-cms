@@ -55,6 +55,7 @@
         <el-table
         border
         :data="tableData"
+        @expand-change="expandChange"
         style="width: 100%">
             <el-table-column type="expand" label="点击展开" width="80">
                 <template slot-scope="scope">
@@ -107,7 +108,7 @@
 </template>
 
 <script>
-    import { Roles, addRoles, getRolesById, editRoles, deleteRoles } from '../../api/api'
+    import { Roles, addRoles, getRolesById, editRoles, deleteRoles, deleteRolesRight } from '../../api/api'
     export default {
         data(){
             return {
@@ -130,7 +131,8 @@
                     roleName: '',
                     roleDesc: '',
                     id: ''
-                }
+                },
+                currentRoles: {}
             }
         },
         methods: {
@@ -211,6 +213,21 @@
                         type: 'info',
                         message: '已取消删除'
                     });          
+                })
+            },
+            // 获取角色id
+            expandChange(row){
+                // console.log(row);
+                this.currentRoles = row
+            },
+            // 删除权限
+            deleteRight(row, rightId){
+                // 删除指定角色的权限
+                deleteRolesRight({roleId: row.id, rightId: rightId}).then(res => {
+                    if (res.meta.status === 200) {
+                        // 删除成功，把新数据重新赋值
+                        row.children = res.data
+                    }
                 })
             }
         },

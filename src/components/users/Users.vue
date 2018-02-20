@@ -13,6 +13,7 @@
             <el-button @click="findMan" slot="append" icon="el-icon-search"></el-button>
         </el-input>
         <el-button type="success" plain @click="dialogVisibleAdd = true">添加用户</el-button>
+        
         <el-table
         border
         :data="tableData"
@@ -57,6 +58,8 @@
                 </template>
             </el-table-column>
         </el-table>
+
+        <!-- 分页 -->
         <el-pagination
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
@@ -73,18 +76,18 @@
         @close="closeDialogUser('add')"
         :visible.sync="dialogVisibleAdd"
         width="40%"  class="demo-ruleForm">
-            <el-form ref="addUserForm" :rules="rules" :model="auser" label-width="80px">
-                <el-form-item label="用户名" prop="username">
-                    <el-input v-model="auser.username"></el-input>
+            <el-form ref="userform" :rules="rules" :model="user" label-width="80px">
+                <el-form-item label="用户名" prop='username'>
+                    <el-input v-model="user.username"></el-input>
                 </el-form-item>
-                <el-form-item label="密码" prop="password">
-                    <el-input v-model="auser.password"></el-input>
+                <el-form-item label="密码" prop='password'>
+                    <el-input v-model="user.password"></el-input>
                 </el-form-item>
-                <el-form-item label="邮箱" prop="email">
-                    <el-input v-model="auser.email"></el-input>
+                <el-form-item label="邮箱" prop='email'>
+                    <el-input v-model="user.email"></el-input>
                 </el-form-item>
-                <el-form-item label="手机" prop="mobile">
-                    <el-input v-model="auser.mobile"></el-input>
+                <el-form-item label="手机" prop='mobile'>
+                    <el-input v-model="user.mobile"></el-input>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
@@ -146,7 +149,7 @@
     export default {
         data() {
             return {
-                auser: {
+                user: {
                     username: '',
                     password: '',
                     email: '',
@@ -192,6 +195,7 @@
         methods: {
             // 设置权限弹框
             setUserRoles(row){
+                console.log(row);
                 this.RolesName = row;
                 RolesList().then(res => {
                     if(res.meta.status === 200) {
@@ -218,10 +222,10 @@
             },
             // 添加管理员
             AddUserSubmit(){
-                this.$refs['addUserForm'].validate(valid => {
+                console.log("1");
+                this.$refs['userform'].validate(valid => {
                     if(valid) {
                         addUser(this.user).then(res => {
-                            console.log(res);
                             if(res.meta.status === 201) {
                                 this.dialogVisibleAdd = false;
                                 this.initList();
@@ -316,13 +320,11 @@
             // 提交编辑，已经编辑好图书，点击确定，把编辑好的图书同步到数据库
             // 分页每页条数
             handleSizeChange(val) {
-                console.log(`每页 ${val} 条`);
                 this.pagesize = val;
                 this.initList()
             },
             // 分页当前页码数
             handleCurrentChange(val) {
-                console.log(`当前页: ${val}`);
                 this.currentPage = val
                 this.initList()
             },
@@ -333,7 +335,6 @@
                     pagenum: this.currentPage,
                     pagesize: this.pagesize
                 }).then((res) => {
-                    // console.log(res);
                     if(res.meta.status === 200) {
                         this.tableData = res.data.users
                         this.total = res.data.total

@@ -137,3 +137,10 @@ export const getRoles = (params) => {
         return res.data
     })
 }
+
+// 获取左侧导航菜单列表
+export const getMenu = () => {
+    return axios.get('menus').then(res => {
+        return res.data
+    })
+}

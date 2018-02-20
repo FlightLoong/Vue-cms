@@ -116,3 +116,10 @@ export const deleteRolesRight = (params) => {
         return res.data
     })
 }
+
+// 提交功能授权
+export const submitAuth = (params) => {
+    return axios.post('roles/' + params.roleId + '/rights', params).then(res => {
+        return res.data
+    })
+}

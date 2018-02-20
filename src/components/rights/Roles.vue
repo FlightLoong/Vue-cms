@@ -58,6 +58,7 @@
         :visible.sync="dialogVisibleChange"
         width="40%"  class="demo-ruleForm">
             <el-tree
+            ref="tree"
             :props="propsTree"
             :data="dataTree"
             node-key="id"
@@ -128,7 +129,7 @@
 </template>
 
 <script>
-    import { Roles, addRoles, getRolesById, editRoles, deleteRoles, deleteRolesRight, Rights } from '../../api/api'
+    import { Roles, addRoles, getRolesById, editRoles, deleteRoles, deleteRolesRight, Rights, submitAuth } from '../../api/api'
     export default {
         data(){
             return {
@@ -159,7 +160,8 @@
                     label: 'authName',
                     children: 'children'
                 },
-                dataTree: []
+                dataTree: [],
+                currentRoleId: ''
             }
         },
         methods: {
@@ -277,12 +279,32 @@
                         this._getThirdRightId(row.children, this.selectTree)
                         this.dialogVisibleChange = true;
                         // 设置当前角色
-                        // this.currentRole = row.id
+                        this.currentRoleId = row.id;
                     }
                 })
             },
             // 确定用户的权限界面
-            ChangeRulesSubmit(){},
+            ChangeRulesSubmit(){
+                // 获取所有选中节点的数据对象列表
+                let list = this.$refs['tree'].getCheckedNodes()
+                let ids = list.map(item => {
+                    return item.id + ',' + item.pid;
+                })
+                // 调用 set 构造函数对数组去重
+                let retTmp = new Set(ids.join(',').split(','))
+                let retStr = [...retTmp].join(',');
+
+                submitAuth({ roleId: this.currentRoleId, rids: retStr }).then(res => {
+                    if(res.meta.status === 200) {
+                        this.rolesList();
+                        this.dialogVisibleChange = false;
+                        this.$message({
+                            message: res.meta.msg,
+                            type: 'success'
+                        })
+                    }
+                })
+            },
             handleCheckChange(){},
             _getThirdRightId (data, arr) {
                 // 获取三级权限id

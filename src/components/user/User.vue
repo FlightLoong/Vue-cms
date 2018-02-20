@@ -36,6 +36,10 @@
                 label="电话">
             </el-table-column>
             <el-table-column
+                prop="role_name"
+                label="角色">
+            </el-table-column>
+            <el-table-column
                 prop="mg_state"
                 label="用户状态">
                 <!-- 使用作用域插槽来定制数据的显示 -->
@@ -47,9 +51,9 @@
                 label="操作">
                 <!-- 使用作用域插槽来定制数据的显示 -->
                 <template slot-scope="scope">
-                    <el-button  @click='editDialog(scope.row)' size='small' plain type="primary" icon="el-icon-edit"></el-button>
-                    <el-button  @click="removeDialog(scope.row)" size='small' plain type="danger" icon="el-icon-delete"></el-button>
-                    <el-button size='small' plain type="success" icon="el-icon-check"></el-button>
+                    <el-button @click='editDialog(scope.row)' size='small' plain type="primary" icon="el-icon-edit"></el-button>
+                    <el-button @click="removeDialog(scope.row)" size='small' plain type="danger" icon="el-icon-delete"></el-button>
+                    <el-button @click="setUserRoles(scope.row)" size='small' plain type="success" icon="el-icon-check"></el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -111,11 +115,34 @@
                 <el-button type="primary" @click="EddUserSubmit">确 定</el-button>
             </span>
         </el-dialog>
+
+        <!-- 设置用户的权限 -->
+        <el-dialog
+        title="请选择"
+        @close="closeDialogUser('setRoles')"
+        :visible.sync="dialogVisibleSetRoles"
+        width="40%"  class="demo-ruleForm">
+            <div>
+                <p>当前的用户名: {{ RolesName.username }}</p>
+                <span>请选择角色：</span><el-select v-model="RolesValue" placeholder="请选择岗位权限">
+                    <el-option
+                    v-for="item in RolesList"
+                    :key="item.id"
+                    :label="item.roleName"
+                    :value="item.id">
+                    </el-option>
+                </el-select>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisibleSetRoles = false">取 消</el-button>
+                <el-button type="primary" @click="SetRolesSubmit">确 定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
 <script>
-    import { usersData, usersStateChange, addUser, getUserById, editUser, deleteUser, findUser } from '../../api/api'
+    import { usersData, usersStateChange, addUser, getUserById, editUser, deleteUser, findUser, RolesList, getRoles } from '../../api/api'
     export default {
         data() {
             return {
@@ -152,13 +179,43 @@
                 tableData: [], // 管理员实际总条数列表
                 dialogVisibleAdd: false,  // 添加用户
                 dialogVisibleEdit: false, // 编辑用户
-                query: ''
+                dialogVisibleSetRoles: false,
+                RolesName: {}, // 设置权限时获取用户名
+                RolesValue: '', // 选择框 RolesValue
+                query: '',
+                RolesList: [] // 所要设置的成员列表
             }
         },
         mounted() {
             this.initList();
         },
         methods: {
+            // 设置权限弹框
+            setUserRoles(row){
+                this.RolesName = row;
+                RolesList().then(res => {
+                    if(res.meta.status === 200) {
+                        this.RolesList = res.data
+                    }
+                })
+                // console.log(RoleList);
+                this.dialogVisibleSetRoles = true;
+            },
+            // 设置权限确定按钮
+            SetRolesSubmit(){
+                getRoles({ id: this.RolesName.id, rid: this.RolesValue }).then(res => {
+                    if (res.meta.status === 200) {
+                        // 隐藏弹窗
+                        this.dialogVisibleSetRoles = false
+                        // 提示
+                        this.$message({
+                            type: 'success',
+                            message: res.meta.msg
+                        })
+                        this.initList()
+                    }
+                })
+            },
             // 添加管理员
             AddUserSubmit(){
                 this.$refs['addUserForm'].validate(valid => {
@@ -179,6 +236,8 @@
                     this.dialogVisibleAdd = false;                    
                 }else if(flag === 'edit'){
                     this.dialogVisibleEdit = false; 
+                }else{
+                    this.dialogVisibleSetRoles = false; 
                 }
             },
             // 管理员使用状态的切换
@@ -274,7 +333,7 @@
                     pagenum: this.currentPage,
                     pagesize: this.pagesize
                 }).then((res) => {
-                    console.log(res);
+                    // console.log(res);
                     if(res.meta.status === 200) {
                         this.tableData = res.data.users
                         this.total = res.data.total

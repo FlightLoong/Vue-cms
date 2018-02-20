@@ -123,3 +123,17 @@ export const submitAuth = (params) => {
         return res.data
     })
 }
+
+// 用户管理-分配角色
+export const RolesList = (params) => {
+    return axios.get('roles').then(res => {
+        return res.data
+    })
+}
+
+// 用户管理-分配角色
+export const getRoles = (params) => {
+    return axios.put('users/' + params.id + '/role', params).then(res => {
+        return res.data
+    })
+}

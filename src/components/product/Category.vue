@@ -14,7 +14,7 @@
         <el-button class="el-btn" type="success" plain @click="addCate">添加分类</el-button>
 
         <!-- 树状结构 -->
-        <tree-grid :columns="columns" :tree-structure="true" :data-source="dataSource" @deleteCate="deleteCategory" @showForm="showEditForm" @refresh="initList"></tree-grid>
+        <tree-grid :columns="columns" :tree-structure="true" :data-source="dataSource" @deleteCate="deleteCategory" @showForm="showEditForm" @refresh="cateList"></tree-grid>
 
         <!-- 分页 -->
         <el-pagination
@@ -52,12 +52,29 @@
                 <el-button type="primary" @click="AddCateSubmit">确 定</el-button>
             </span>
         </el-dialog>
+
+         <!-- 编辑分类 -->
+        <el-dialog
+        title="添加用户"
+        @close="closeDialogCate('edit')"
+        :visible.sync="editCategory"
+        width="40%">
+            <div>
+                <span>分类名称</span>
+                <el-input class="cateWidth" v-model="ecate.cat_name"></el-input>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="editCategory = false">取 消</el-button>
+                <el-button type="primary" @click="editCateSubmit">确 定</el-button>
+            </span>
+        </el-dialog>
+        
     </div>
 </template>
 
 <script>
     import TreeGrid from './TreeGrid.vue'
-    import { getCateLsit, addCateapi } from "../../api/api";
+    import { getCateLsit, addCateapi, getCateById, editCate, deleteCate } from "../../api/api";
     export default {
         data(){
             return {
@@ -69,9 +86,16 @@
                 pagesize: 5,
                 total: 10,
                 addCategory: false,
+                editCategory: false,
                 cate: {
                     cat_pid: '',
-                    cat_name: ''
+                    cat_name: '',
+                    cat_level: ''
+                },
+                ecate: {
+                    cat_pid: '',
+                    cat_name: '',
+                    cat_level: ''
                 },
                 columns: [{
                     text: '分类名称',
@@ -129,9 +153,11 @@
             closeDialogCate(){},
             AddCateSubmit(){
                 if (this.selectedOptions.length === 0) {
-                    this.cate.cat_pid = 0
+                    this.cate.cat_pid = 0;
+                    this.cate.cat_level = 1
                 } else {
-                    this.cate.cat_pid = this.selectedOptions[this.selectedOptions.length - 1]
+                    this.cate.cat_pid = this.selectedOptions[this.selectedOptions.length - 1];
+                    this.cate.cat_level = this.selectedOptions.length === 1 ? 2 : 3
                 }
 
                 addCateapi(this.cate).then(res => {
@@ -145,9 +171,49 @@
                     }
                 })
             },
-            deleteCategory(){},
-            showEditForm(){},
-            initList(){}
+            deleteCategory(cid){
+                deleteCate({id: cid}).then(res => {
+                    if (res.meta.status === 200) {
+                        // 刷新列表
+                        this.cateList()
+                        this.$message({
+                            type: 'success',
+                            message: res.meta.msg
+                        })
+                    }
+                })
+            },
+            // 编辑分类
+            showEditForm(cid){
+                getCateLsit().then(res => {
+                    if (res.meta.status === 200) {
+                        this.ecateList = res.data
+                        // 获取数据后调用获取分类信息接口
+                        return getCateById({id: cid})
+                    }
+                }).then(res => {
+                    if (res.meta.status === 200) {
+                        // 把数据填充到表单
+                        this.ecate.cat_pid = res.data.cat_id
+                        this.ecate.cat_name = res.data.cat_name
+                        this.ecate.cat_level = res.data.cat_level
+                        this.editCategory = true
+                    }
+                })
+            },
+            editCateSubmit(){
+                editCate(this.ecate).then(res => {
+                    if (res.meta.status === 200) {
+                        // 刷新列表
+                        this.cateList()
+                        this.editCategory = false
+                        this.$message({
+                            type: 'success',
+                            message: res.meta.msg
+                        })
+                    }
+                })
+            }
         },
         mounted(){
             this.cateList();

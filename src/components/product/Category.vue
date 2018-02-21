@@ -11,7 +11,7 @@
         </el-row>
 
         <!-- 添加分类按钮 -->
-        <el-button class="el-btn" type="success" plain @click="addCategory = true">添加分类</el-button>
+        <el-button class="el-btn" type="success" plain @click="addCate">添加分类</el-button>
 
         <!-- 树状结构 -->
         <tree-grid :columns="columns" :tree-structure="true" :data-source="dataSource" @deleteCate="deleteCategory" @showForm="showEditForm" @refresh="initList"></tree-grid>
@@ -32,21 +32,21 @@
         title="添加用户"
         @close="closeDialogCate('add')"
         :visible.sync="addCategory"
-        width="40%"  class="demo-ruleForm">
-            <el-form ref="userform" :rules="rules" :model="cate" label-width="80px">
-                <el-form-item label="用户名" prop='username'>
-                    <el-input v-model="cate.username"></el-input>
-                </el-form-item>
-                <el-form-item label="密码" prop='password'>
-                    <el-input v-model="cate.password"></el-input>
-                </el-form-item>
-                <el-form-item label="邮箱" prop='email'>
-                    <el-input v-model="cate.email"></el-input>
-                </el-form-item>
-                <el-form-item label="手机" prop='mobile'>
-                    <el-input v-model="cate.mobile"></el-input>
-                </el-form-item>
-            </el-form>
+        width="40%">
+            <div>
+                <span>分类名称</span>
+                <el-input class="cateWidth" v-model="cate.cat_name"></el-input>
+            </div>
+            <div>
+                <span>父级分类</span>
+                <el-cascader
+                    :options="cateLists"
+                    v-model="selectedOptions"
+                    :props="options"
+                    @change="handleChange"
+                    :show-all-levels="false">
+                </el-cascader>
+            </div>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="addCategory = false">取 消</el-button>
                 <el-button type="primary" @click="AddCateSubmit">确 定</el-button>
@@ -57,34 +57,21 @@
 
 <script>
     import TreeGrid from './TreeGrid.vue'
-    import { getCateLsit } from "../../api/api";
+    import { getCateLsit, addCateapi } from "../../api/api";
     export default {
         data(){
             return {
+                options: {
+                    value: 'cat_id',
+                    label: 'cat_name'
+                },
                 currentPage: 1,
                 pagesize: 5,
                 total: 10,
                 addCategory: false,
-                rules: {
-                    username: [
-                        { required: true, message: '请输入您的用户名', tigger: 'blur' }
-                    ],
-                    password: [
-                        { required: true, message: '请输入您的密码', tigger: 'blur' }
-                    ],
-                    email: [
-                        { required: true, message: '请输入您的用户名', tigger: 'blur' }
-                    ],
-                    mobile: [
-                        { required: true, message: '请输入您的密码', tigger: 'blur' }
-                    ]
-                },
                 cate: {
-                    username: '',
-                    password: '',
-                    email: '',
-                    mobile: '',
-                    id: ''
+                    cat_pid: '',
+                    cat_name: ''
                 },
                 columns: [{
                     text: '分类名称',
@@ -99,7 +86,9 @@
                     dataIndex: 'cat_level',
                     width: 100
                 }],
-               dataSource: []
+               dataSource: [],
+               selectedOptions: [],
+               cateLists: []
             }
         },
         methods: {
@@ -109,13 +98,11 @@
                         this.dataSource = res.data.result
                         // console.log(this.dataSource);
                         this.pagesize = res.data.pagesize;
-                        // this.currentPage = res.data.pagenum;
                         this.total = res.data.total;
                     }
                     
                 })
             },
-            // 提交编辑，已经编辑好图书，点击确定，把编辑好的图书同步到数据库
             // 分页每页条数
             handleSizeChange(val) {
                 this.pagesize = val;
@@ -126,8 +113,40 @@
                 this.currentPage = val
                 this.cateList()
             },
+            // 添加分类
+            addCate(){
+                getCateLsit({type: 2}).then(res => {
+                    if (res.meta.status === 200) {
+                        this.cateLists = res.data
+                        this.addCategory = true
+                    }
+                })
+            },
+            // 点击更改分类
+            handleChange(){
+
+            },
             closeDialogCate(){},
-            AddCateSubmit(){},
+            AddCateSubmit(){
+                if (this.selectedOptions.length === 0) {
+                    this.cate.cat_pid = 0
+                    // this.cate.cat_level = 1
+                } else {
+                    this.cate.cat_pid = this.selectedOptions[this.selectedOptions.length - 1]
+                    // this.cate.cat_level = this.selectedOptions.length === 1 ? 2 : 3
+                }
+
+                addCateapi(this.cate).then(res => {
+                    if(res.meta.status === 201) {
+                        this.cateList();
+                        this.addCategory = false;
+                        this.$message({
+                            type: 'success',
+                            message: res.meta.msg
+                        })
+                    }
+                })
+            },
             deleteCategory(){},
             showEditForm(){},
             initList(){}
@@ -157,6 +176,9 @@
 
     .el-btn{
         margin: 10px 0;
+    }
+    .cateWidth{
+        width: 150px;
     }
 </style>
 

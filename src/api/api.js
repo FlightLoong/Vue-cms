@@ -151,3 +151,10 @@ export const getCateLsit = (params) => {
         return res.data
     })
 }
+
+// 商品管理添加分类
+export const addCateapi = (params) => {
+    return axios.post('categories', params).then(res => {
+        return res.data
+    })
+}

@@ -130,10 +130,8 @@
             AddCateSubmit(){
                 if (this.selectedOptions.length === 0) {
                     this.cate.cat_pid = 0
-                    // this.cate.cat_level = 1
                 } else {
                     this.cate.cat_pid = this.selectedOptions[this.selectedOptions.length - 1]
-                    // this.cate.cat_level = this.selectedOptions.length === 1 ? 2 : 3
                 }
 
                 addCateapi(this.cate).then(res => {

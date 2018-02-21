@@ -9,6 +9,7 @@ import Users from '@/components/users/Users'
 import Rights from '@/components/rights/Rights'
 import Roles from '@/components/rights/Roles'
 import Category from '@/components/product/Category'
+import Param from '@/components/product/Param'
 
 Vue.use(Router)
 
@@ -35,7 +36,8 @@ export default new Router({
 				{ path: '/rights', component: Rights, name:'rights'},
 				{ path: '/roles', component: Roles, name:'roles'},
 				{ path: '/category', component: Roles, name: 'category'},
-				{ path: '/categories', component: Category, name: 'categorie', name: 'categories'}
+				{ path: '/categories', component: Category, name: 'categorie', name: 'categories'},
+				{path: '/params', component: Param, name: 'param'}
 			]
 		}
 	]

@@ -15,13 +15,40 @@
             </el-cascader>
         </div>
         <el-tabs type="border-card" :value="nowTab" @tab-click="tabToggle">
-            <el-tab-pane label="动态参数" name="rundata">
+            <el-tab-pane  type="expand" label="动态参数" name="rundata">
                 <div>
                     <el-button size='small' type="success" plain>添加参数名称</el-button>
                     <el-table
                     border
                     :data="dtableData"
                     style="width: 100%">
+                        <el-table-column type="expand">
+                            <template slot-scope="scope">
+                                <!-- <div>{{ scope.row }}</div> -->
+                                <div>
+                                    <el-tag
+                                    :key="index"
+                                    v-for="(tag, index) in scope.row.attr_vals"
+                                    closable
+                                    :disable-transitions="false"
+                                    @close="handleClose(tag)">
+                                        {{tag}}
+                                    </el-tag>
+                                    <el-input
+                                    class="input-new-tag"
+                                    v-if="scope.row.inputVisible"
+                                    v-model="scope.row.inputValue"
+                                    ref="saveTagInput"
+                                    size="small"
+                                    autofocus
+                                    @keyup.enter.native="handleInputConfirm(scope.row)"
+                                    @blur="handleInputConfirm(scope.row)"
+                                    >
+                                    </el-input>
+                                    <el-button v-else class="button-new-tag" size="small" @click="showInput(scope.row)">+ New Tag</el-button>
+                                </div>
+                            </template>
+                        </el-table-column>
                         <el-table-column
                             type="index"
                             label="#"
@@ -107,7 +134,15 @@
                 getParams({ id: cid, sel: flag }).then(res => {
                     // console.log(res);
                     if(res.meta.status === 200) {
-                        this[type] = res.data
+                        // this[type] = res.data
+                        this[type] = res.data.map(item => {
+                            // 每行添加两个属性，用于控制输入框的显示和输入的值
+                            this.$set(item, 'inputVisible', false)
+                            this.$set(item, 'inputValue', '')
+                            // 把字符串参数转换成数据
+                            item.attr_vals = item.attr_vals.split(',')
+                            return item
+                        })
                     }
                 })
             },
@@ -129,6 +164,28 @@
                         this.paramsList = res.data;
                     }
                 })
+            },
+            // 每个标签点击删除
+            handleClose(){},
+            // 保存标签输入的内容
+            handleInputConfirm(row){
+                console.log(row.inputValue);
+                row.attr_vals.push(row.inputValue);
+                addParams({
+                    aId: row.cat_id,
+                    pId: row.attr_id,
+                    attr_sel: 'many',
+                    attr_name: row.attr_name,
+                    attr_vals: row.attr_vals.join(',')
+                }).then(res => {
+                    // console.log(res)
+                    // 设置输入域隐藏，按钮显示
+                    row.inputVisible = false
+                })
+            },
+            // 点击的时候显示输入框
+            showInput(row){
+                row.inputVisible = true
             }
         },
         mounted() {

@@ -186,9 +186,17 @@ export const getParams = (params) => {
         return res.data
     })
 }
+
 // 添加参数或者属性
 export const addParams = (params) => {
     return axios.put('categories/' + params.aId + '/attributes/' + params.pId, params).then(res => {
+        return res.data
+    })
+}
+
+// 获取商品列表
+export const getProducts = (params) => {
+    return axios.get('goods', {params: params}).then(res => {
         return res.data
     })
 }
